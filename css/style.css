@@ -4546,3 +4546,116 @@ body:has(.ms-envelope.is-open) .ma-mark{
 @media (max-width:900px),(hover:none) and (pointer:coarse){
   .author-doc .au-drop{font-size:2.2em;margin:.04em -.06em 0 0}
 }
+
+/* ===== v58: social marks — dark wax seals, engraved gilt, candle glow ===== */
+.find-us ul{flex-wrap:wrap;row-gap:1rem;column-gap:clamp(.8rem,3vw,1.8rem)}
+.find-us .fu-wax{
+  position:relative;
+  width:58px;height:58px;
+  color:#d7b36a;
+  border-radius:50% 46% 53% 47%/47% 53% 46% 51%;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(140,36,32,.45) 0, transparent 34%),
+    radial-gradient(circle at 70% 78%, rgba(0,0,0,.45) 0, transparent 42%),
+    radial-gradient(circle at 50% 54%, #3a0a0c 0, #1a0406 58%, #080101 100%);
+  box-shadow:
+    inset 0 0 0 2px #120303,
+    inset 0 0 0 3.5px rgba(176,136,64,.42),
+    inset 0 0 0 6px rgba(28,6,6,.85),
+    inset 0 10px 16px rgba(0,0,0,.55),
+    inset 0 -6px 10px rgba(70,12,10,.28),
+    0 5px 10px rgba(0,0,0,.88);
+  filter:none;
+  transition:transform .35s ease, box-shadow .35s ease, color .35s ease, filter .35s ease;
+}
+.find-us .fu-wax::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border-radius:inherit;
+  border:1px solid rgba(201,164,98,.28);
+  box-shadow:inset 0 0 0 3px rgba(8,2,2,.4);
+  pointer-events:none;
+}
+.find-us .fu-wax svg{
+  position:relative;
+  z-index:1;
+  width:22px;height:22px;
+  filter:drop-shadow(0 1px 0 rgba(255,224,170,.28)) drop-shadow(0 -1px 0 rgba(20,0,0,.8));
+}
+.find-us .fu-t{color:#cbb892;letter-spacing:.18em}
+.find-us .fu-seal:hover .fu-wax,
+.find-us .fu-seal:focus-visible .fu-wax{
+  color:#f6e3b0;
+  transform:rotate(-5deg) scale(1.05);
+  filter:none;
+  box-shadow:
+    inset 0 0 0 2px #1a0404,
+    inset 0 0 0 3.5px rgba(232,196,110,.75),
+    inset 0 0 0 6px rgba(40,8,8,.8),
+    inset 0 8px 14px rgba(0,0,0,.45),
+    0 0 14px rgba(170,22,24,.55),
+    0 0 26px rgba(201,164,98,.28),
+    0 6px 14px rgba(0,0,0,.85);
+}
+.find-us .fu-seal:hover .fu-wax::before,
+.find-us .fu-seal:focus-visible .fu-wax::before{
+  border-color:rgba(246,217,150,.7);
+}
+.find-us .fu-seal:hover .fu-t,
+.find-us .fu-seal:focus-visible .fu-t{color:#f3e6c8}
+
+.nav-ext a{display:inline-flex;align-items:center;gap:.45rem}
+.nav-ext a.ext::before{content:none!important}
+.nav-ext .nv-ico{
+  display:block;
+  flex:0 0 auto;
+  width:14px;height:14px;
+  padding:6px;
+  box-sizing:content-box;
+  color:#d4b36a;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(90,18,16,.55), #140505 68%, #070101 100%);
+  border-radius:50% 46% 52% 48%/48% 52% 46% 50%;
+  box-shadow:
+    inset 0 0 0 1px #120303,
+    inset 0 0 0 2px rgba(176,136,64,.45),
+    inset 0 2px 3px rgba(0,0,0,.55),
+    0 1px 2px rgba(0,0,0,.75);
+  filter:drop-shadow(0 1px 0 rgba(255,220,160,.15));
+  transition:color .3s ease, box-shadow .3s ease, filter .3s ease;
+}
+.nav-ext a:hover .nv-ico,
+.nav-ext a:focus-visible .nv-ico{
+  color:#f6e3b0;
+  box-shadow:
+    inset 0 0 0 1px #1a0404,
+    inset 0 0 0 2px rgba(232,196,110,.8),
+    0 0 8px rgba(170,22,24,.5),
+    0 0 14px rgba(201,164,98,.28);
+  filter:drop-shadow(0 0 4px rgba(230,160,60,.35));
+}
+.nav-ext a:hover .nv-lab,
+.nav-ext a:focus-visible .nv-lab{color:#fff1d6!important}
+@media (min-width:1241px) and (max-width:1919px){
+  #primary-nav .nav-ext{display:flex!important;gap:.55rem;margin-left:.55rem;padding-left:.55rem}
+  #primary-nav .nav-ext .nv-lab{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  #primary-nav .nav-ext a{padding:.35rem .12rem!important}
+  #primary-nav .nav-ext .nv-ico{width:15px;height:15px;padding:5px}
+}
+@media (max-width:1240px){
+  .nav-ext{flex-wrap:wrap;justify-content:center;gap:.9rem 1.15rem;padding-bottom:1.2rem}
+  .nav-ext .nv-ico{width:15px;height:15px;padding:6px}
+}
+@media (prefers-reduced-motion:reduce){
+  .find-us .fu-wax,
+  .nav-ext .nv-ico{transition:none}
+  .find-us .fu-seal:hover .fu-wax,
+  .find-us .fu-seal:focus-visible .fu-wax{transform:none}
+}
+
+/* v58: Listen everywhere (Ditto SmartLink) on the Read by the Dead drawer */
+.al-everywhere{margin:1rem auto .2rem;text-align:center}
+.al-smart{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.4rem 1rem;border:1px solid #b48c55;background:#160b0c;color:#f6e5be;font:600 .84rem/1.35 var(--f-sc);letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.al-smart:hover,.al-smart:focus-visible{background:#3a1418;border-color:#f5d598;color:#fff6e4}
+.listen-row{margin-top:1.2rem}
