@@ -1,0 +1,55 @@
+name: v59 materialize pages
+on:
+  push:
+    branches: [v59-so-may-he-rest]
+jobs:
+  materialize:
+    if: github.ref == 'refs/heads/v59-so-may-he-rest'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v59-so-may-he-rest
+          fetch-depth: 0
+      - name: Unpack page payload and clean up
+        run: |
+          set -euo pipefail
+          if [ ! -d .v59-payload ]; then
+            echo "No payload; nothing to do"
+            exit 0
+          fi
+          python3 <<'PY'
+          import base64, hashlib, tarfile, io
+          from pathlib import Path
+          parts = sorted(Path('.v59-payload').glob('part-*-of-*.b64'))
+          if not parts:
+              raise SystemExit('no payload parts')
+          b64 = ''.join(p.read_text() for p in parts)
+          raw = base64.b64decode(b64)
+          expect = 'cd4d3f519161d9fae91d05ee7490cd170201dab846b2ab0bf2d55123e11f3d43'
+          got = hashlib.sha256(raw).hexdigest()
+          if got != expect:
+              raise SystemExit(f'sha mismatch {got}')
+          buf = io.BytesIO(raw)
+          with tarfile.open(fileobj=buf, mode='r:gz') as tar:
+              try:
+                  tar.extractall('.', filter='data')
+              except TypeError:
+                  tar.extractall('.')
+              names = tar.getnames()
+          print('extracted', len(names), 'sha', got)
+          if 'sealed-room.html' in names or any(n.startswith('sealed-room') for n in names):
+              raise SystemExit('refusing sealed-room in payload')
+          PY
+          rm -rf .v59-payload
+          rm -f .github/workflows/v59-materialize.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+          git config user.name "porcelainballerina"
+          git config user.email "99560512+porcelainballerina@users.noreply.github.com"
+          git add -A
+          git status --short | head
+          git commit -m "v59: materialize remaining So May He Rest out-now pages [skip ci]"
+          git push origin HEAD:v59-so-may-he-rest
