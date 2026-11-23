@@ -1,0 +1,33 @@
+name: v59 merge to main
+on:
+  push:
+    branches:
+      - v59-so-may-he-rest
+    paths:
+      - .github/workflows/v59-merge-to-main.yml
+  workflow_dispatch:
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Squash merge v59 onto main and push
+        run: |
+          set -euo pipefail
+          git config user.name "porcelainballerina"
+          git config user.email "99560512+porcelainballerina@users.noreply.github.com"
+          git fetch origin v59-so-may-he-rest
+          git merge --squash origin/v59-so-may-he-rest
+          rm -f .github/workflows/v59-open-pr.yml .github/workflows/v59-merge-to-main.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+          git add -A
+          git status --short | head
+          git commit -m "v59: So May He Rest out now — Listen everywhere SmartLink and Spotify album link"
+          git push origin HEAD:main
