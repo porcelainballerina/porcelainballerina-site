@@ -1,0 +1,33 @@
+name: v59 open pull request
+on:
+  push:
+    branches: [v59-so-may-he-rest]
+  workflow_dispatch:
+jobs:
+  open:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create pull request if needed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          existing=$(gh pr list --repo porcelainballerina/porcelainballerina-site --head v59-so-may-he-rest --base main --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            echo "PR already open: #$existing"
+            exit 0
+          fi
+          gh pr create --repo porcelainballerina/porcelainballerina-site --base main --head v59-so-may-he-rest --title "v59: So May He Rest out now — Listen everywhere SmartLink and Spotify album link" --body "So May He Rest is out now (23 November 2026).
+
+- Home and upcoming cards say: Out now. So May He Rest. 23 November 2026.
+- Listen everywhere: https://ditto.fm/so-may-he-rest
+- Listen on Spotify points at the album: https://open.spotify.com/album/2l3fo2B4OQHvHY12KbHFUH
+- Suno album link kept: https://suno.com/album/e360a210-27d8-40bd-8128-385def0455f1
+- Cache bumped (sw.js build 1795411504).
+- No sealed-room.html. GoatCounter stays the existing invisible count. CNAME unchanged.
+
+Approved by Reven to go live on porcelainballerina.com."
