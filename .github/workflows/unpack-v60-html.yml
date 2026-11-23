@@ -1,0 +1,47 @@
+name: Unpack v60 HTML
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  unpack:
+    if: github.repository == 'porcelainballerina/porcelainballerina-site'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack HTML archives and clean up
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+          root = Path('.')
+          n = 0
+          for arc in sorted(root.glob('_v60_html/html-part-*.txt')):
+              text = arc.read_text(encoding='utf-8')
+              found = list(re.finditer(r'<<<FILE (.+?)>>>\n(.*?)<<<END>>>\n', text, flags=re.S))
+              if not found:
+                  raise SystemExit(f'no files in {arc}')
+              for m in found:
+                  rel, body = m.group(1), m.group(2)
+                  if rel in {'404.html', 'CNAME', 'sealed-room.html'} or rel.endswith('sealed-room.html'):
+                      raise SystemExit(f'refused path {rel}')
+                  if not rel.endswith('.html') or rel.startswith('/') or '..' in rel or rel.startswith('.github/'):
+                      raise SystemExit(f'bad path {rel}')
+                  dest = root / rel
+                  dest.parent.mkdir(parents=True, exist_ok=True)
+                  dest.write_text(body, encoding='utf-8')
+                  n += 1
+          print('wrote', n, 'html files')
+          if n < 200:
+              raise SystemExit('too few files unpacked')
+          PY
+          git config user.name porcelainballerina
+          git config user.email 99560512+porcelainballerina@users.noreply.github.com
+          rm -rf _v60_html
+          git add -A
+          git reset HEAD -- CNAME sealed-room.html 2>/dev/null || true
+          git rm -f --ignore-unmatch .github/workflows/unpack-v60-html.yml
+          git status --porcelain | wc -l
+          git commit -m "v60: cache-bust remaining pages for the Ballerina gate"
+          git push origin HEAD
