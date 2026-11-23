@@ -1,0 +1,61 @@
+name: Import gate images
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    if: github.repository == 'porcelainballerina/porcelainballerina-site'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch altar and library plates
+        run: |
+          set -euo pipefail
+          base='https://raw.githubusercontent.com/porcelainballerina/porcelainballerina-test/main'
+          mkdir -p images/gate images/gate-library
+          files='
+            images/gate-library/01-distance-closed.webp
+            images/gate-library/02-approach.webp
+            images/gate-library/03-book-open.webp
+            images/gate-library/04-book-closing.webp
+            images/gate-library/05-book-closed.webp
+            images/gate-library/06-mid-ballerina.webp
+            images/gate-library/07-close-ballerina.webp
+            images/gate/altar-tall.webp
+            images/gate/altar-wide-sm.webp
+            images/gate/altar-wide.webp
+            images/gate/circle-sm.jpg
+            images/gate/circle.jpg
+            images/gate/corner.jpg
+            images/gate/packet-open-sm.webp
+            images/gate/packet-open.webp
+            images/gate/packet-sm.webp
+            images/gate/packet.webp
+            images/gate/rose.webp
+            images/gate/seal-cracked.webp
+            images/gate/seal-glow.webp
+            images/gate/seal-l.webp
+            images/gate/seal-r.webp
+            images/gate/seal-sm.webp
+            images/gate/seal.webp
+            images/gate/sheet-edge.webp
+            images/gate/sheet.webp
+            images/gate/vellum.jpg
+          '
+          for f in $files; do
+            curl -fsSL -o "$f" "$base/$f"
+            test -s "$f"
+          done
+      - name: Commit the images
+        run: |
+          set -euo pipefail
+          git config user.name porcelainballerina
+          git config user.email 99560512+porcelainballerina@users.noreply.github.com
+          git add images/gate images/gate-library
+          if git diff --cached --quiet; then
+            echo 'Images already present'
+            exit 0
+          fi
+          git commit -m "v60: add library and altar images for the Ballerina gate"
+          git push origin HEAD
