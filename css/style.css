@@ -4667,6 +4667,9 @@ body:has(.ms-envelope.is-open) .ma-mark{
 @media (max-width:699px){
   .album-hero h1.title-fraktur.title-wrapped{padding-bottom:1.15em}
 }
+/* v-presave-line: forthcoming streaming date under the album title, as a readable sentence. */
+.album-hero .listen-out{margin:.7rem 0 0;max-width:28em;font:1.05rem/1.45 var(--f-body);letter-spacing:.02em;color:var(--bone)}
+.album-hero .listen-out + .album-jump{margin-top:.85rem}
 /* ---- gate D: sealed vellum letter (break the seal to read; her letter writes itself) ---- */
 .pb-wg{background:#030101!important}
 .pb-wg .wg-bg,.pb-wg .wg-circle,.pb-wg .wg-corner,.pb-wg .wg-drift,.pb-wg .wg-flame,.pb-wg .wg-vig{position:absolute;pointer-events:none}
