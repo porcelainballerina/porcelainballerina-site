@@ -1,0 +1,87 @@
+name: Materialize live v66 pre-save
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.live-v66-payload/**'
+jobs:
+  materialize:
+    if: github.repository == 'porcelainballerina/porcelainballerina-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack surgical payload onto main
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, base64, tarfile, hashlib, io
+          from pathlib import Path
+
+          payload = Path('.live-v66-payload')
+          man = json.loads((payload / 'manifest.json').read_text())
+          allowed = set(man['files'])
+          forbidden = {
+              'CNAME', 'robots.txt', 'sealed-room.html', 'warn-gate.js',
+              'js/warn-gate.js', '.github/workflows/live-v66-materialize.yml',
+          }
+          parts = [payload / name for name in man['parts']]
+          if not parts or any(not p.is_file() for p in parts):
+              raise SystemExit('missing archive parts')
+          blob = b''.join(base64.b64decode(p.read_text().strip()) for p in parts)
+          digest = hashlib.sha256(blob).hexdigest()
+          if digest != man['tar_sha256']:
+              raise SystemExit(f'tar sha mismatch {digest}')
+          print('rebuilt tar.gz', len(blob), 'sha', digest)
+          extracted = {}
+          with tarfile.open(fileobj=io.BytesIO(blob), mode='r:gz') as tar:
+              for m in tar.getmembers():
+                  name = m.name.lstrip('./')
+                  if not m.isfile():
+                      continue
+                  if name in forbidden or name.startswith('.github/') or '..' in name or name.startswith('/'):
+                      raise SystemExit(f'refused path {name}')
+                  if name not in allowed:
+                      raise SystemExit(f'path not in manifest {name}')
+                  f = tar.extractfile(m)
+                  extracted[name] = f.read()
+          missing = allowed - set(extracted)
+          if missing:
+              raise SystemExit('missing from tar: ' + ', '.join(sorted(missing)))
+          if 'CNAME' in extracted or 'sealed-room.html' in extracted:
+              raise SystemExit('refusing identity/room files')
+          for name, data in extracted.items():
+              dest = Path(name)
+              dest.parent.mkdir(parents=True, exist_ok=True)
+              dest.write_bytes(data)
+              print('wrote', name, len(data))
+          print('ok: unpacked', len(extracted), 'surgical files')
+          PY
+          rm -rf .live-v66-payload .github/workflows/live-v66-materialize.yml
+          if [ ! -f CNAME ]; then
+            echo "REFUSING: CNAME missing after unpack" >&2
+            exit 2
+          fi
+          if grep -qx 'porcelainballerina.com' CNAME; then
+            :
+          else
+            echo "REFUSING: CNAME content changed" >&2
+            cat CNAME >&2
+            exit 2
+          fi
+          if [ -e sealed-room.html ]; then
+            echo "REFUSING: sealed-room.html present" >&2
+            exit 2
+          fi
+          test -f albums/sixteen-ways-to-fall.html
+          grep -q 'click-presave-sixteen-ways-to-fall' albums/sixteen-ways-to-fall.html
+          grep -q 'Out on all streaming platforms 7 December 2026' albums/sixteen-ways-to-fall.html
+          grep -q 'https://ditto.fm/sixteen-ways-to-fall' albums/sixteen-ways-to-fall.html
+          git config user.name "porcelainballerina"
+          git config user.email "99560512+porcelainballerina@users.noreply.github.com"
+          git add -A
+          git status --short
+          git commit -m "v66: add Pre-save for Sixteen Ways to Fall" -m "Pre-save button to the public Ditto SmartLink and a 7 December 2026 streaming date line on the Sixteen Ways to Fall album page. Listen on Suno stays. No change to the live gate, CNAME, GoatCounter, or other pages."
+          git push origin main
