@@ -77,6 +77,50 @@ function scatterRelics(root) {
   main.prepend(box);
 }
 // ---- blood titles: every big blackletter title is written in blood that runs ----
+function keepTitlePhrases(span) {
+  // Keep short function words with the next word so a long hero title
+  // wraps as "Sixteen Ways / to Fall", not "Sixteen Ways to / Fall".
+  const small = /^(to|of|the|a|an|and|in|on|for)$/i;
+  const kids = [...span.childNodes];
+  for (let i = 0; i < kids.length; i++) {
+    const w = kids[i];
+    if (!w || w.nodeType !== 1 || !w.classList.contains('hw') || !small.test(w.textContent)) continue;
+    let j = i + 1, next = null, space = null;
+    while (j < kids.length) {
+      const n = kids[j];
+      if (n.nodeType === 3 && /^\s+$/.test(n.textContent)) { space = n; j += 1; continue; }
+      if (n.nodeType === 1 && n.classList.contains('hw')) next = n;
+      break;
+    }
+    if (!next) continue;
+    const keep = document.createElement('span');
+    keep.className = 'title-keep';
+    w.before(keep);
+    keep.appendChild(w);
+    if (space) keep.appendChild(space);
+    keep.appendChild(next);
+    kids[i] = kids[j] = null;
+  }
+}
+function lastLineLetters(span) {
+  const chs = [...span.querySelectorAll('.ch')];
+  if (chs.length < 2) return chs;
+  const tops = chs.map((el) => el.offsetTop);
+  const last = Math.max(...tops);
+  return chs.filter((el, i) => Math.abs(tops[i] - last) < 6);
+}
+function attachHeroDrips(span, count) {
+  span.querySelectorAll(':scope > .drip, .ch > .drip').forEach((d) => d.remove());
+  const letters = lastLineLetters(span);
+  if (!letters.length) return;
+  const order = letters.slice().sort(() => Math.random() - 0.5);
+  for (let k = 0; k < count; k++) {
+    const d = document.createElement('b'); d.className = 'drip'; d.setAttribute('aria-hidden', 'true');
+    const wd = 2.5 + Math.random() * 3.5;
+    d.style.cssText = `left:${(30 + Math.random() * 40).toFixed(1)}%;--w:${wd.toFixed(1)}px;--h:${Math.round(22 + Math.random() * 70)}px;--t:${(4 + Math.random() * 5).toFixed(1)}s;--d:${(0.6 + Math.random() * 3).toFixed(1)}s`;
+    order[k % order.length].appendChild(d);
+  }
+}
 function bleedTitles(root) {
   root.querySelectorAll('h1.title-fraktur, h2.title-fraktur, .section-title, .lib-h').forEach((h, n) => {
     if (h.querySelector('.bt')) return;
@@ -84,6 +128,8 @@ function bleedTitles(root) {
     while (h.firstChild) span.appendChild(h.firstChild);
     h.appendChild(span);
     handwrite(span);
+    const hero = h.closest('.album-hero');
+    if (hero) keepTitlePhrases(span);
     // a few loose specks of ink flicked from the nib
     const nS = h.matches('h1, .lib-h') ? 6 : 0;
     for (let k = 0; k < nS; k++) {
@@ -93,11 +139,23 @@ function bleedTitles(root) {
     }
     if (reduceMotion || !h.matches('h1, .lib-h')) return;   // v44: blood drips on page titles only
     const big = true; const count = big ? 7 : 4;
-    for (let k = 0; k < count; k++) {
-      const d = document.createElement('b'); d.className = 'drip'; d.setAttribute('aria-hidden', 'true');
-      const wd = (big ? 2.5 : 1.8) + Math.random() * (big ? 3.5 : 2);
-      d.style.cssText = `left:${6 + Math.random() * 88}%;--w:${wd.toFixed(1)}px;--h:${Math.round((big ? 22 : 12) + Math.random() * (big ? 70 : 34))}px;--t:${(4 + Math.random() * 5).toFixed(1)}s;--d:${(0.6 + Math.random() * 3).toFixed(1)}s`;
-      span.appendChild(d);
+    if (hero) {
+      const place = () => {
+        const tops = [...span.querySelectorAll('.hw')].map((el) => el.offsetTop);
+        const wraps = tops.length > 1 && (Math.max(...tops) - Math.min(...tops) > 6);
+        h.classList.toggle('title-wrapped', wraps);
+        if (!reduceMotion) attachHeroDrips(span, count);
+      };
+      const start = () => requestAnimationFrame(place);
+      if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(start);
+      else start();
+    } else {
+      for (let k = 0; k < count; k++) {
+        const d = document.createElement('b'); d.className = 'drip'; d.setAttribute('aria-hidden', 'true');
+        const wd = (big ? 2.5 : 1.8) + Math.random() * (big ? 3.5 : 2);
+        d.style.cssText = `left:${6 + Math.random() * 88}%;--w:${wd.toFixed(1)}px;--h:${Math.round((big ? 22 : 12) + Math.random() * (big ? 70 : 34))}px;--t:${(4 + Math.random() * 5).toFixed(1)}s;--d:${(0.6 + Math.random() * 3).toFixed(1)}s`;
+        span.appendChild(d);
+      }
     }
   });
 }
