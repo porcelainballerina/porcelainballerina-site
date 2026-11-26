@@ -1,0 +1,90 @@
+name: Materialize live v65 album assets
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.live-v65-payload/**'
+jobs:
+  materialize:
+    if: github.repository == 'porcelainballerina/porcelainballerina-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack surgical payload onto main
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, base64, tarfile, hashlib, io
+          from pathlib import Path
+
+          payload = Path('.live-v65-payload')
+          man = json.loads((payload / 'manifest.json').read_text())
+          allowed = set(man['files'])
+          forbidden = {
+              'CNAME', 'robots.txt', 'sealed-room.html', 'warn-gate.js',
+              'js/warn-gate.js', '.github/workflows/live-v65-materialize.yml',
+          }
+          parts = [payload / name for name in man['parts']]
+          if not parts or any(not p.is_file() for p in parts):
+              raise SystemExit('missing archive parts')
+          blob = b''.join(base64.b64decode(p.read_text().strip()) for p in parts)
+          digest = hashlib.sha256(blob).hexdigest()
+          if digest != man['tar_sha256']:
+              raise SystemExit(f'tar sha mismatch {digest}')
+          print('rebuilt tar.gz', len(blob), 'sha', digest)
+          extracted = {}
+          with tarfile.open(fileobj=io.BytesIO(blob), mode='r:gz') as tar:
+              for m in tar.getmembers():
+                  name = m.name.lstrip('./')
+                  if not m.isfile():
+                      continue
+                  if name in forbidden or name.startswith('.github/') or '..' in name or name.startswith('/'):
+                      raise SystemExit(f'refused path {name}')
+                  if name not in allowed:
+                      raise SystemExit(f'path not in manifest {name}')
+                  f = tar.extractfile(m)
+                  extracted[name] = f.read()
+          missing = allowed - set(extracted)
+          if missing:
+              raise SystemExit('missing from tar: ' + ', '.join(sorted(missing)))
+          if 'CNAME' in extracted or 'sealed-room.html' in extracted:
+              raise SystemExit('refusing identity/room files')
+          for name, data in extracted.items():
+              dest = Path(name)
+              dest.parent.mkdir(parents=True, exist_ok=True)
+              dest.write_bytes(data)
+              print('wrote', name, len(data))
+          print('ok: unpacked', len(extracted), 'surgical files')
+          PY
+          rm -rf .live-v65-payload .github/workflows/live-v65-materialize.yml
+          if [ ! -f CNAME ]; then
+            echo "REFUSING: CNAME missing after unpack" >&2
+            exit 2
+          fi
+          if grep -qx 'porcelainballerina.com' CNAME; then
+            :
+          else
+            echo "REFUSING: CNAME content changed" >&2
+            cat CNAME >&2
+            exit 2
+          fi
+          if [ -e sealed-room.html ]; then
+            echo "REFUSING: sealed-room.html present" >&2
+            exit 2
+          fi
+          test -f albums/sixteen-ways-to-fall.html
+          test -f albums/bar-thirty-seven.html
+          git config user.name "porcelainballerina"
+          git config user.email "99560512+porcelainballerina@users.noreply.github.com"
+          git add -A
+          git status --short
+          git commit -m "$(cat <<'EOF'
+v65: add Sixteen Ways to Fall and Bar Thirty-Seven (Suno)
+
+New on Suno album pages for both official releases, home/albums/graveyard updates, and a mobile album-hero title fix so long titles stay readable. No change to the live gate, CNAME, GoatCounter, or indexing.
+EOF
+)"
+          git push origin main
