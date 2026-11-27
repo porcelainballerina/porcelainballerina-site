@@ -1,0 +1,12 @@
+{
+  "tar_sha256": "05e355d27f0b5b80998b3af628e11e03f9e8804ef015ece06939c2c0fb84d374",
+  "tar_bytes": 11558,
+  "parts": [
+    "live-site.tar.gz.part01.b64"
+  ],
+  "files": [
+    "about.html",
+    "css/about-sealed.css",
+    "js/about-sealed.js"
+  ]
+}
