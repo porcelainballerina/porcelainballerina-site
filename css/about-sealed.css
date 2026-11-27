@@ -1,0 +1,140 @@
+/* About letters: sealed in the new-site entrance letter style. Not openable. */
+
+#morrow-ash .ms-leaves.ms-pair{
+  align-items:stretch;
+  overflow:hidden;
+}
+#morrow-ash .ms-envelope{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-width:0;
+}
+#morrow-ash .ms-env-stage{
+  position:relative;
+  width:100%;
+  isolation:isolate;
+}
+#morrow-ash .ms-env-circle{
+  position:absolute;
+  left:50%;
+  top:48%;
+  width:124%;
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  z-index:0;
+  mix-blend-mode:screen;
+  opacity:.34;
+  -webkit-mask:radial-gradient(circle,#000 56%,transparent 72%);
+  mask:radial-gradient(circle,#000 56%,transparent 72%);
+}
+#morrow-ash .ms-env-circle i{
+  position:absolute;
+  inset:0;
+  background:url(../images/gate/circle.jpg) center/contain no-repeat;
+  animation:wgTurn 420s linear infinite, wgPulse 7s ease-in-out infinite;
+}
+@media (max-width:699px){
+  #morrow-ash .ms-env-circle i{background-image:url(../images/gate/circle-sm.jpg)}
+}
+
+/* In-page packet: same letter as the entrance, sized to its own width */
+#morrow-ash .wg-env{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:none;
+  aspect-ratio:4/3;
+  cursor:default;
+  container-type:inline-size;
+  --u:max(4.6px, 1cqi);
+  margin:0 auto;
+  transform:none;
+}
+#morrow-ash .ms-envelope:first-of-type .wg-env{transform:rotate(-.35deg)}
+#morrow-ash .ms-envelope:nth-of-type(2) .wg-env{transform:rotate(.45deg)}
+#morrow-ash .wg-env:hover,
+#morrow-ash .wg-env:focus-visible{transform:rotate(0deg)}
+#morrow-ash .wg-env:focus-visible{outline:1px solid rgba(190,60,40,.7);outline-offset:-6%}
+
+/* Keep the wax whole. No open packet, no crack, no sparks. */
+#morrow-ash .wg-pk2,
+#morrow-ash .wg-env-seal .wg-sc,
+#morrow-ash .wg-env-seal .wg-s1,
+#morrow-ash .wg-env-seal .wg-s2,
+#morrow-ash .wg-sparks,
+#morrow-ash .wg-smoke{display:none!important}
+#morrow-ash .wg-env-seal .wg-s0{opacity:1!important}
+
+/* Later-line sits in the entrance poem panel, same hand, no invitation to break */
+#morrow-ash .wg-env-love{
+  left:58%;
+  width:26%;
+  top:63.5%;
+  font-size:calc(var(--u)*2.35);
+  line-height:1.16;
+  text-align:center;
+  white-space:normal;
+}
+#morrow-ash .wg-env-love .wg-poem{
+  display:block;
+  white-space:nowrap;
+  font:400 calc(var(--u)*2.35)/1.16 "Fondamento","PB Hand",cursive;
+  font-style:italic;
+  color:#3a0503;
+}
+#morrow-ash .wg-later-flourish{
+  display:block;
+  width:70%;
+  height:.4em;
+  margin:.2em auto 0;
+  opacity:.75;
+}
+#morrow-ash .wg-later-flourish .wg-flour{
+  width:100%;
+  height:100%;
+  fill:none;
+  stroke:#2c0302;
+  stroke-width:1.6;
+  stroke-linecap:round;
+  overflow:visible;
+}
+
+/* Address: "Why I write." is a single line — keep it centered in the same panel */
+#morrow-ash .wg-env-to{
+  white-space:nowrap;
+}
+
+#morrow-ash .pk-label{
+  margin-top:.35rem;
+  position:relative;
+  z-index:1;
+}
+#morrow-ash .pk-later{
+  margin:.4rem .2rem 0;
+  min-height:1.25em;
+  text-align:center;
+  font:1rem/1.4 var(--f-body,"Garamond",Georgia,serif);
+  letter-spacing:.02em;
+  color:var(--bone,#ece3d0);
+  opacity:0;
+  transition:opacity .35s ease;
+  position:relative;
+  z-index:1;
+}
+#morrow-ash .ms-envelope.is-later-told .pk-later{opacity:1}
+
+/* Fixed chrome must not sit on the letters */
+body.ms-letters-near .ma-mark,
+body.ms-letters-near .ritual-path{
+  opacity:0!important;
+  pointer-events:none;
+  transition:opacity .3s;
+}
+
+@media (max-width:699px){
+  #morrow-ash .ms-leaves.ms-pair{gap:1.6rem}
+  #morrow-ash .wg-env{--u:max(4.8px, 1cqi)}
+  #morrow-ash .pk-label{margin-top:.15rem}
+}
