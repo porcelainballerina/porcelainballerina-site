@@ -1,4 +1,4 @@
-name: Materialize live v68 remove lyrics
+name: Materialize live v68 lyrics removal and Danger Close
 on:
   workflow_dispatch:
   push:
@@ -104,9 +104,26 @@ jobs:
             echo "REFUSING: album-card lyric quotes still present" >&2
             exit 2
           fi
+          test -f albums/danger-close.html
+          test -f songs/danger-close/01-vigil.html
+          test -f images/albums/danger-close.jpg
+          test -f images/albums/cv-danger-close.webp
+          test -f images/albums/danger-close-phone.webp
+          test -f images/hall/danger-close.jpg
+          test -f images/share/album--danger-close-d33ced7d56.jpg
+          test -f images/share/danger-close--01-vigil-bd61488927.jpg
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          idx = Path('index.html').read_text()
+          arts = re.findall(r'<article class="rl-doc rl-suno-live.*?</article>', idx, re.S)
+          if not arts or 'danger-close' not in arts[0] or 'Danger Close' not in arts[0]:
+              raise SystemExit('REFUSING: Danger Close is not first in New on Suno')
+          print('ok: Danger Close first in New on Suno')
+          PY
           git config user.name "porcelainballerina"
           git config user.email "99560512+porcelainballerina@users.noreply.github.com"
           git add -A
           git status --short
-          git commit -m "v68: remove song lyrics and translations from the public site" -m "Song pages keep the title, cover, listen links and album navigation. The homepage oracle, album-card quotes, Open Graph lyric lines and searchable lyric index are also removed. Album diary notes, greetings and the entry gate are unchanged."
+          git commit -m "v68: remove song lyrics and translations, and add Danger Close" -m "Song pages keep the title, cover, listen links and album navigation. The homepage oracle, album-card quotes, Open Graph lyric lines and searchable lyric index are also removed. Danger Close is added as album 25 (11 songs, live on Suno 26 Nov 2026) and leads the New on Suno box. Album diary notes, greetings and the entry gate are unchanged."
           git push origin main
